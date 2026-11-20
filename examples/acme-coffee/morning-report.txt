@@ -1,0 +1,41 @@
+Marketing report for 2026-11-18. Last 7 days vs the 7 before.
+
+HOW MANY (GA4)
+Yesterday: 412 sessions, 9 key events
+Sessions 7d: 2,874 (+6% wow)
+Users 7d: 2,468 (+5% wow)
+Key events 7d: 61 (+13% wow)
+Channels: Organic Search 1,240, Direct 702, Paid Search 455, Unassigned 214
+
+WHY (PostHog)
+form_submitted people 7d: 17 (+21% wow)
+contact_clicked people 7d: 38 (+9% wow)
+form_submitted rate: 0.76% of people (people over people)
+Leads start on: /wholesale (11), /subscriptions (4), /contact (2)
+AI assistants sent: chatgpt.com 41, perplexity.ai 12
+
+SEARCH (Search Console, 2026-11-10..2026-11-16, data lags 2-3 days)
+Clicks: 486 (+7% wow)
+Impressions: 21,430 (+7% wow)
+Avg position: 12.0 (impression-weighted)
+Top queries: "acme coffee" 141, "cold brew subscription" 52, "wholesale coffee beans" 31
+
+ADS (Google Ads)
+Spend 7d: 418.75 (+4% wow)
+Conversions 7d: 7.0 (-12% wow)
+Cost per conversion: 59.82
+Search impression share 62%, lost to rank 21%, lost to budget 17%
+Top spend: Search - Wholesale 248.40, Search - Brand 96.15, PMax - Shop 74.20
+
+LEADS: 2 yesterday, 6 in 7 days (webhook, tests excluded)
+Notes: 2026-11-14 new wholesale page live
+
+CHECK BEFORE YOU TRUST
+[high] PostHog saw 17 people fire form_submitted, the lead webhook received 6. Leads may be getting lost between the form and sales.
+[medium] Referrer 'acme-coffee.webflow.io' looks like staging or a preview build. Exclude it in POSTHOG_EXCLUDE_HOSTS.
+[medium] GA4 channel 'Unassigned' is in the top channels. Usually untagged links or AI-assistant referrals; add UTMs or a custom channel group.
+[medium] Lost 17% of impression share to budget. More budget would buy more of the same traffic.
+[info] AI assistants sent 53 people this week (chatgpt.com, perplexity.ai). GA4 often files them under Referral or Unassigned.
+[info] form_submitted: 17 people this week. Too few to read a rate change; compare over 4+ weeks.
+
+https://marketing-hub.example.workers.dev

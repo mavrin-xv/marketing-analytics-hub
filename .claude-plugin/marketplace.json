@@ -1,0 +1,15 @@
+{
+  "name": "marketing-analytics-hub",
+  "plugins": [
+    {
+      "name": "marketing-analytics-hub",
+      "source": "./",
+      "description": "One dashboard and a morning report for a small team's site and ads: a Cloudflare Worker with D1 that pulls GA4, Search Console, Google Ads and PostHog, sends the report to Telegram or Slack, and alerts sales on every new lead.",
+      "version": "0.1.0"
+    }
+  ],
+  "owner": {
+    "name": "Artem Mavrin",
+    "url": "https://github.com/mavrin-xv"
+  }
+}

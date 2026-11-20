@@ -1,0 +1,51 @@
+{
+  "day": "2026-11-18",
+  "hosts": ["acme-coffee.com", "shop.acme-coffee.com"],
+  "windows": {
+    "cur": {"from": "2026-11-12", "to": "2026-11-18"},
+    "prev": {"from": "2026-11-05", "to": "2026-11-11"},
+    "gscCur": {"from": "2026-11-10", "to": "2026-11-16"},
+    "gscPrev": {"from": "2026-11-03", "to": "2026-11-09"}
+  },
+  "sources": {
+    "ga4": {
+      "yesterday": {"_days": 1, "sessions": 412, "users": 351, "new_users": 268, "pageviews": 1190, "engaged_sessions": 233, "key_events": 9},
+      "cur": {"_days": 7, "sessions": 2874, "users": 2468, "new_users": 1902, "pageviews": 8215, "engaged_sessions": 1597, "key_events": 61},
+      "prev": {"_days": 7, "sessions": 2711, "users": 2350, "new_users": 1811, "pageviews": 7790, "engaged_sessions": 1503, "key_events": 54}
+    },
+    "posthog": {
+      "yesterday": {"_days": 1, "pageviews": 1032, "users": 322, "sessions": 377, "form_submitted": 3, "form_submitted_users": 3, "contact_clicked": 7, "contact_clicked_users": 6},
+      "cur": {"_days": 7, "pageviews": 7104, "users": 2240, "sessions": 2602, "form_submitted": 19, "form_submitted_users": 17, "contact_clicked": 44, "contact_clicked_users": 38},
+      "prev": {"_days": 7, "pageviews": 6820, "users": 2161, "sessions": 2470, "form_submitted": 15, "form_submitted_users": 14, "contact_clicked": 40, "contact_clicked_users": 35}
+    },
+    "gsc": {
+      "yesterday": null,
+      "cur": {"_days": 7, "clicks": 486, "impressions": 21430, "pos_x_impr": 257160},
+      "prev": {"_days": 7, "clicks": 455, "impressions": 20110, "pos_x_impr": 247353}
+    },
+    "ads": {
+      "yesterday": {"_days": 1, "spend": 61.2, "clicks": 48, "impressions": 1530, "conversions": 1, "conv_value": 0},
+      "cur": {"_days": 7, "spend": 418.75, "clicks": 322, "impressions": 10480, "conversions": 7, "conv_value": 0},
+      "prev": {"_days": 7, "spend": 402.1, "clicks": 309, "impressions": 10120, "conversions": 8, "conv_value": 0}
+    }
+  },
+  "sync": {
+    "posthog": {"source": "posthog", "status": "ok", "ended_at": "2026-11-19T06:01:12Z", "message": ""},
+    "ga4": {"source": "ga4", "status": "ok", "ended_at": "2026-11-19T06:30:41Z", "message": ""},
+    "gsc": {"source": "gsc", "status": "ok", "ended_at": "2026-11-19T07:00:38Z", "message": ""},
+    "ads": {"source": "ads", "status": "ok", "ended_at": "2026-11-19T07:30:55Z", "message": ""}
+  },
+  "top": {
+    "channels": [["Organic Search", 1240], ["Direct", 702], ["Paid Search", 455], ["Unassigned", 214]],
+    "leadPages": [["/wholesale", 11], ["/subscriptions", 4], ["/contact", 2]],
+    "aiRefs": [["chatgpt.com", 41], ["perplexity.ai", 12]],
+    "referrers": [["www.google.com", 1105], ["chatgpt.com", 41], ["acme-coffee.webflow.io", 23], ["perplexity.ai", 12]],
+    "queries": [["acme coffee", 141], ["cold brew subscription", 52], ["wholesale coffee beans", 31]],
+    "campaigns": [["Search - Wholesale", 248.4], ["Search - Brand", 96.15], ["PMax - Shop", 74.2]]
+  },
+  "impressionShare": {"search_is": 0.62, "lost_rank": 0.21, "lost_budget": 0.17},
+  "leads": {"yesterday": 2, "cur": 6},
+  "leadEvents": ["form_submitted", "contact_clicked"],
+  "dashboard": "https://marketing-hub.example.workers.dev",
+  "notes": [{"day": "2026-11-14", "note": "new wholesale page live"}]
+}

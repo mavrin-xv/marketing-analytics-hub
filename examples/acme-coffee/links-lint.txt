@@ -1,0 +1,16 @@
+OK   https://acme-coffee.com/wholesale?utm_source=newsletter&utm_medium=email&utm_campaign=2026-11-wholesale
+FAIL https://acme-coffee.com/subscriptions?utm_source=fb&utm_medium=Paid Social&utm_campaign=cold-brew
+     error: utm_medium='Paid Social': use lowercase letters, digits, - _ . only (no spaces or capitals)
+     error: utm_source=fb: use 'facebook' so it does not split from the same source tagged elsewhere
+     warn:  utm_medium=paid social: not one GA4's default channels recognise; it will show as Unassigned unless you add a custom channel group
+FAIL https://acme-coffee.com/?utm_Source=instagram&utm_medium=bio
+     error: utm_Source: parameter names must be lowercase (GA4 treats utm_Source as a different key)
+     error: missing utm_campaign
+     warn:  utm_medium=bio: not one GA4's default channels recognise; it will show as Unassigned unless you add a custom channel group
+WARN https://acme-coffee.com/wholesale
+     warn:  no UTM tags: fine for organic links, wrong for anything you paid for or emailed
+WARN http://acme-coffee.com/shop?utm_source=google&utm_medium=cpc&utm_campaign=shop&gclid=abc
+     warn:  http link: the redirect to https can drop the query string on some hosts
+     warn:  gclid and UTMs together: let Google Ads auto-tagging win, drop the manual UTMs on ad URLs
+
+5 checked, 2 with errors

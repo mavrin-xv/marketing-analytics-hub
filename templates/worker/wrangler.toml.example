@@ -1,0 +1,51 @@
+# Copy to wrangler.toml and fill in the values marked CHANGE.
+# Secrets never go in this file. Set them with `npx wrangler secret put NAME` (list at the bottom).
+
+name = "marketing-hub"               # CHANGE: becomes marketing-hub.<your-subdomain>.workers.dev
+main = "src/index.js"
+compatibility_date = "2026-06-01"
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+run_worker_first = true              # so /api/* and auth run before static files are served
+
+[[d1_databases]]
+binding = "DB"
+database_name = "marketing-hub"
+database_id = "00000000-0000-0000-0000-000000000000"   # CHANGE: from `npx wrangler d1 create marketing-hub`
+
+# One source per cron slot. The free plan allows 50 subrequests per invocation, and one GA4 or
+# PostHog pull for three sites uses most of that. Times are UTC. The report goes last so it reads
+# fresh numbers.
+[triggers]
+crons = ["0 6 * * *", "30 6 * * *", "0 7 * * *", "30 7 * * *", "0 8 * * *"]
+
+[vars]
+HOSTS = "acme-coffee.com,shop.acme-coffee.com"   # CHANGE: sites to track, comma separated, no www
+TIMEZONE_LABEL = "UTC"
+REPORT_CHANNELS = "telegram"                     # telegram, slack, or "telegram,slack"
+DASHBOARD_URL = ""                               # optional, linked at the bottom of the report
+
+# Leave a block empty to switch that source off. The sync skips it and the report says "not connected".
+GA4_PROPERTY_ID = ""                             # numeric, Admin > Property details
+GSC_SITES = ""                                   # comma separated: sc-domain:acme-coffee.com,https://shop.acme-coffee.com/
+POSTHOG_HOST = "https://eu.posthog.com"          # or https://us.posthog.com
+POSTHOG_PROJECT_ID = ""
+POSTHOG_EXCLUDE_HOSTS = "localhost,127.0.0.1"    # staging and preview hosts to drop from every query
+POSTHOG_INTERNAL_EMAIL_DOMAIN = ""             # e.g. acme-coffee.com: people with that email domain are your team, dropped
+ADS_CUSTOMER_ID = ""                             # 10 digits, no dashes
+ADS_LOGIN_CUSTOMER_ID = ""                       # manager account id if you access through an MCC
+ADS_API_VERSION = "v26"                          # check developers.google.com/google-ads/api/docs/release-notes
+LEAD_EVENTS = "form_submitted,contact_clicked"   # PostHog events that count as a lead or a lead intent
+
+# Secrets (wrangler secret put ...):
+#   DASHBOARD_PASSWORD     shared login password
+#   SESSION_SECRET         32+ random characters for the cookie signature
+#   GOOGLE_SA_JSON         full service-account key JSON (GA4 + Search Console)
+#   POSTHOG_API_KEY        personal API key with Query Read
+#   ADS_DEVELOPER_TOKEN    Google Ads API developer token
+#   ADS_CLIENT_ID / ADS_CLIENT_SECRET / ADS_REFRESH_TOKEN   OAuth client for Google Ads
+#   TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID                   morning report and lead alerts
+#   SLACK_WEBHOOK_URL      report channel; SLACK_LEADS_WEBHOOK_URL for sales (falls back to the first)
+#   LEAD_HOOK_SECRET       shared secret your form or PostHog destination sends in X-Hook-Secret

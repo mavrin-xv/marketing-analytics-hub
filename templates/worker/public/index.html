@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marketing Hub</title>
+<style>
+  :root { --bg:#f7f7f5; --card:#fff; --ink:#1c1c1a; --mute:#6b6b66; --line:#e4e4df; --up:#1d7a46; --down:#b23a2e; --accent:#2b5fd9; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#141413; --card:#1e1e1c; --ink:#ececea; --mute:#9a9a94; --line:#2e2e2b; --up:#4cc27f; --down:#ef7a6c; --accent:#7ea2ff; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { display:flex; flex-wrap:wrap; gap:12px; align-items:center; padding:16px; border-bottom:1px solid var(--line); }
+  header h1 { font-size:17px; margin:0 auto 0 0; }
+  select, input, button { font:inherit; padding:6px 10px; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--ink); }
+  button { cursor:pointer; }
+  main { padding:16px; max-width:1200px; margin:0 auto; }
+  .grid { display:grid; gap:12px; grid-template-columns:repeat(auto-fill, minmax(230px, 1fr)); }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; }
+  .card h2 { font-size:13px; font-weight:600; color:var(--mute); margin:0 0 8px; text-transform:none; }
+  .kpi { display:flex; justify-content:space-between; gap:8px; padding:3px 0; }
+  .kpi b { font-variant-numeric:tabular-nums; }
+  .up { color:var(--up); } .down { color:var(--down); } .na { color:var(--mute); }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  td { padding:4px 0; border-top:1px solid var(--line); vertical-align:top; }
+  td:last-child { text-align:right; font-variant-numeric:tabular-nums; padding-left:8px; }
+  td:first-child { word-break:break-all; }
+  pre { white-space:pre-wrap; font-size:13px; margin:0; }
+  #login { max-width:320px; margin:15vh auto; display:grid; gap:10px; }
+  .hidden { display:none; }
+  .note { color:var(--mute); font-size:13px; margin:6px 0 0; }
+</style>
+</head>
+<body>
+<form id="login" class="card hidden">
+  <h2>Marketing Hub</h2>
+  <input id="pw" type="password" placeholder="Password" autocomplete="current-password" required>
+  <button>Log in</button>
+  <p id="loginErr" class="note"></p>
+</form>
+
+<div id="app" class="hidden">
+<header>
+  <h1>Marketing Hub</h1>
+  <select id="range">
+    <option value="7">Last 7 days</option>
+    <option value="28" selected>Last 28 days</option>
+    <option value="90">Last 90 days</option>
+  </select>
+  <input id="host" placeholder="host (blank = all)" size="18">
+  <button id="reload">Reload</button>
+</header>
+<main>
+  <section class="grid" id="kpis"></section>
+  <h3>How many came, and from where</h3>
+  <section class="grid" id="tops1"></section>
+  <h3>Why they acted</h3>
+  <section class="grid" id="tops2"></section>
+  <h3>Data health</h3>
+  <section class="grid">
+    <div class="card"><h2>Last sync runs</h2><table id="runs"></table></div>
+    <div class="card"><h2>Morning report preview</h2><pre id="report">loading</pre></div>
+  </section>
+</main>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const fmt = (v, d = 0) => v === null || v === undefined ? 'n/a' : Number(v).toLocaleString('en-US', { maximumFractionDigits: d });
+const day = (n) => new Date(Date.now() - n * 86400000).toISOString().slice(0, 10);
+
+async function api(path) {
+  const r = await fetch(path, { credentials: 'same-origin' });
+  if (r.status === 401) { showLogin(); throw new Error('login'); }
+  const j = await r.json();
+  if (j.error) throw new Error(j.error);
+  return j.data;
+}
+
+function showLogin() { $('app').classList.add('hidden'); $('login').classList.remove('hidden'); }
+
+$('login').onsubmit = async (e) => {
+  e.preventDefault();
+  const r = await fetch('/api/login', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ password: $('pw').value }) });
+  if (!r.ok) { $('loginErr').textContent = 'Wrong password'; return; }
+  $('login').classList.add('hidden'); load();
+};
+
+function deltaHtml(cur, prev) {
+  if (cur === undefined || prev === undefined || prev === null || !prev) return '';
+  const pct = (cur - prev) / prev * 100;
+  return ` <span class="${pct >= 0 ? 'up' : 'down'}">${pct >= 0 ? '+' : ''}${pct.toFixed(0)}%</span>`;
+}
+
+const KPIS = {
+  ga4: ['GA4: how many', [['sessions', 'Sessions'], ['users', 'Users (daily uniques summed)'], ['key_events', 'Key events']]],
+  posthog: ['PostHog: what they did', [['pageviews', 'Pageviews'], ['form_submitted_users', 'People who submitted a form'], ['contact_clicked_users', 'People who clicked contact']]],
+  gsc: ['Search Console (2-3 day lag)', [['clicks', 'Clicks'], ['impressions', 'Impressions']]],
+  ads: ['Google Ads', [['spend', 'Spend'], ['clicks', 'Clicks'], ['conversions', 'Conversions']]],
+};
+
+function kpiCard(src, block) {
+  const [title, rows] = KPIS[src];
+  if (!block) return `<div class="card"><h2>${title}</h2><p class="na">n/a: no data for this host or not connected</p></div>`;
+  let html = `<div class="card"><h2>${title}</h2>`;
+  for (const [m, label] of rows) {
+    html += `<div class="kpi"><span>${label}</span><b>${fmt(block.cur[m], m === 'spend' ? 2 : 0)}${block.prev ? deltaHtml(block.cur[m], block.prev[m]) : ''}</b></div>`;
+  }
+  if (src === 'gsc' && block.cur.impressions) html += `<div class="kpi"><span>Avg position</span><b>${fmt(block.cur.pos_x_impr / block.cur.impressions, 1)}</b></div>`;
+  if (!block.prev) html += '<p class="note">No comparison: the previous period is not fully stored yet.</p>';
+  return html + '</div>';
+}
+
+async function topCard(title, q) {
+  try {
+    const d = await api('/api/dim?' + q);
+    const rows = d.rows.map((r) => `<tr><td>${String(r.key).replace(/</g, '&lt;')}</td><td>${fmt(r.v)}</td></tr>`).join('');
+    return `<div class="card"><h2>${title}</h2><table>${rows || '<tr><td class="na">no rows</td><td></td></tr>'}</table></div>`;
+  } catch (e) { return `<div class="card"><h2>${title}</h2><p class="na">${e.message}</p></div>`; }
+}
+
+async function load() {
+  $('app').classList.remove('hidden');
+  const n = Number($('range').value);
+  const host = $('host').value.trim() || 'all';
+  const q = `from=${day(n)}&to=${day(1)}&host=${encodeURIComponent(host)}`;
+  const ov = await api('/api/overview?' + q);
+  $('kpis').innerHTML = Object.keys(KPIS).map((s) => kpiCard(s, ov.sources[s])).join('');
+  const t1 = await Promise.all([
+    topCard('Channels (GA4 sessions)', `${q}&source=ga4&dim=channel&metric=sessions&limit=10`),
+    topCard('Landing pages (GA4 sessions)', `${q}&source=ga4&dim=landing&metric=sessions&limit=10`),
+    topCard('Search queries (GSC clicks)', `${q}&source=gsc&dim=query&metric=clicks&limit=10`),
+    topCard('Campaigns (Ads spend)', `${q}&source=ads&dim=campaign&metric=spend&limit=10`),
+  ]);
+  $('tops1').innerHTML = t1.join('');
+  const t2 = await Promise.all([
+    topCard('Pages where leads start (PostHog people)', `${q}&source=posthog&dim=lead_page&metric=users&limit=10`),
+    topCard('Referrers (PostHog people)', `${q}&source=posthog&dim=referrer&metric=users&limit=10`),
+    topCard('AI assistants (PostHog people)', `${q}&source=posthog&dim=ai_ref&metric=users&limit=10`),
+    topCard('Search terms that cost money (Ads spend)', `${q}&source=ads&dim=term&metric=spend&limit=10`),
+  ]);
+  $('tops2').innerHTML = t2.join('');
+  const st = await api('/api/status');
+  $('runs').innerHTML = st.runs.slice(0, 12).map((r) => `<tr><td>${r.source} ${r.started_at.slice(0, 16).replace('T', ' ')}</td><td class="${r.status === 'ok' ? 'up' : 'down'}">${r.status}</td></tr>`).join('');
+  api('/api/report').then((d) => { $('report').textContent = d.text; }).catch((e) => { $('report').textContent = e.message; });
+}
+
+$('reload').onclick = load;
+$('range').onchange = load;
+api('/api/status').then(load).catch(() => {});
+</script>
+</body>
+</html>
